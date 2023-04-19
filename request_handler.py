@@ -2,7 +2,7 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from views import get_all_styles, get_all_items, get_all_metals, get_all_sizes, get_all_orders
 from views import get_single_style, get_single_item, get_single_metal, get_single_size
-from views import create_order, delete_order, update_order, get_single_order
+from views import create_order, delete_order, update_order, get_single_order, update_metal
 
 
 class HandleRequests(BaseHTTPRequestHandler):
@@ -78,8 +78,6 @@ class HandleRequests(BaseHTTPRequestHandler):
         else:
             response = []
 
-        print(self.path)
-
         self.wfile.write(json.dumps(response).encode())
 
     def do_POST(self):
@@ -93,13 +91,13 @@ class HandleRequests(BaseHTTPRequestHandler):
         new_order = None
 
         if resource == "orders":
-            if "metalId" in post_body and "sizeId" in post_body and "styleId" in post_body and "itemId" in post_body:
+            if "metal_id" in post_body and "size_id" in post_body and "style_id" in post_body:
                 new_order = create_order(post_body)
                 self.wfile.write(json.dumps(new_order).encode())
             else:
                 self._set_headers(400)
                 message = {
-                    "message": f'{"Metal is required" if "metalId" not in post_body else ""}{"Size is required" if "sizeId" not in post_body else ""}{"Style is required" if "styleId" not in post_body else ""}{"Item is require" if "itemId" not in post_body else ""}'
+                    "message": f'{"Metal is required" if "metal_id" not in post_body else ""}{"Size is required" if "size_id" not in post_body else ""}{"Style is required" if "style_id" not in post_body else ""}'
                 }
                 self.wfile.write(json.dumps(message).encode())
 
@@ -107,21 +105,30 @@ class HandleRequests(BaseHTTPRequestHandler):
 
     def do_PUT(self):
         """Handles PUT requests to the server """
-        # self._set_headers(204)
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
         post_body = json.loads(post_body)
-
-        # Parse the URL
         (resource, id) = self.parse_url(self.path)
+        success = False
+    
+        if resource == "metals":
+            success = update_metal(id, post_body)
+            self.wfile.write("".encode())
+            
+            if success: 
+                self._set_headers(204)
+            else:
+                self._set_headers(404)
 
-        # Delete a single animal from the list
-        if resource == "orders":
-            self._set_headers(405)
-            message = {
-                "message": "Updating an order is not allowed after it has been placed."}
-            self.wfile.write(json.dumps(message).encode())
-            # commented out to prevent update after order - update_order(id, post_body)
+        elif resource == "orders":
+            success = update_order(id, post_body)
+            self.wfile.write("".encode())
+            
+        if success: 
+            self._set_headers(204)
+        else:
+            self._set_headers(404)
+
 
     def do_DELETE(self):
         self._set_headers(204)
