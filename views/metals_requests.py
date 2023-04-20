@@ -2,40 +2,8 @@ import sqlite3
 import json
 from models import Metal
 
-METALS = [
-    {
-        "id": 1,
-        "metal": "Sterling Silver",
-        "price": 12.42
-    },
-    {
-        "id": 2,
-        "metal": "14K Gold",
-        "price": 736.4
-    },
-    {
-        "id": 3,
-        "metal": "24K Gold",
-        "price": 1258.9
-    },
-    {
-        "id": 4,
-        "metal": "Platinum",
-        "price": 795.45
-    },
-    {
-        "id": 5,
-        "metal": "Palladium",
-        "price": 1241.0
-    }
-]
-
-
-# def get_all_metals():
-#     return METALS
 
 def get_all_metals():
-    # Open a connection to the database, with conn as the variable
     with sqlite3.connect("./kneeldiamonds.sqlite3") as conn:
         conn.row_factory = sqlite3.Row
         db_cursor = conn.cursor()
@@ -47,7 +15,7 @@ def get_all_metals():
             m.metal,
             m.price
 
-        FROM Metal m
+        FROM Metals m
         """
         )
 
@@ -66,15 +34,6 @@ def get_all_metals():
     return metals
 
 
-# def get_single_metal(id):
-#     requested_metal = None
-
-#     for metal in METALS:
-#         if metal["id"] == id:
-#             requested_metal = metal
-
-#     return requested_metal
-
 def get_single_metal(id):
     with sqlite3.connect("./kneeldiamonds.sqlite3") as conn:
         conn.row_factory = sqlite3.Row
@@ -86,7 +45,7 @@ def get_single_metal(id):
             m.metal,
             m.price
             
-        FROM Metal m
+        FROM Metals m
         WHERE m.id = ?
         """,
             (id,),
@@ -109,7 +68,7 @@ def update_metal(id, new_metal):
         db_cursor = conn.cursor()
         db_cursor.execute(
             """
-        UPDATE Metal
+        UPDATE Metals
             SET
                 metal = ?,
                 price = ?

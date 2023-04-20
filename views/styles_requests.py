@@ -1,31 +1,64 @@
-STYLES = [
-    {
-        "id": 1,
-        "style": "Classic",
-        "price": 500
-    },
-    {
-        "id": 2,
-        "style": "Modern",
-        "price": 710
-    },
-    {
-        "id": 3,
-        "style": "Vintage",
-        "price": 965
-    }
-]
+import sqlite3
+from models import Style
 
 
 def get_all_styles():
-    return STYLES
+    with sqlite3.connect("./kneeldiamonds.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
 
+        db_cursor.execute(
+            """
+        SELECT
+            s.id,
+            s.style,
+            s.price
+
+        FROM Styles s
+        """
+        )
+
+        styles = []
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+            style = Style(  
+                row["id"],
+                row["style"],
+                row["price"],
+            )
+            
+            styles.append(style.__dict__)
+
+    return styles
 
 def get_single_style(id):
-    requested_style = None
+    with sqlite3.connect("./kneeldiamonds.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
 
-    for style in STYLES:
-        if style["id"] == id:
-            requested_style = style
+        db_cursor.execute(
+            """
+        SELECT
+            s.id,
+            s.style,
+            s.price
+        FROM Styles s
+        WHERE s.id = ?
+        """,
+        (id,),
+        )
 
-    return requested_style
+        styles = []
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+            size = Style(
+                row["id"],
+                row["style"],
+                row["price"],
+            )
+            
+            styles.append(size.__dict__)
+
+    return styles
